@@ -1,0 +1,46 @@
+name: sign_min
+description: " PDF signing  (visible ink + digital signature via external signer)"
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  syncfusion_flutter_pdf: ^31.1.20
+  syncfusion_flutter_signaturepad: ^31.1.20
+  syncfusion_flutter_pdfviewer: ^31.1.20
+  file_picker: ^10.3.3
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
+  x509: ^0.2.4+3
+  asn1lib: ^1.6.5
+  pointycastle: ^4.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+  flutter_lints: ^5.0.0
+
+
+flutter:
+
+
+  uses-material-design: true
+
+  
+  assets:
+    - assets/privatekey.pem
+    - assets/cert.pem
+    - assets/intermediate.pem
