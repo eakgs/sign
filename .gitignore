@@ -88,9 +88,8 @@ assets/cert_chain.pem
 assets/intermediate.pem
 assets/root.pem
 
-assets/assigned/pdf1.pdf
-assets/assigned/pdf2.pdf
-assets/assigned/pdf3.pdf
+# Ignore any PDF files placed in the assigned folder (do not commit sample PDFs)
+assets/assigned/*.pdf
 
 # Syncfusion license (if stored in code/assets)
 lib/syncfusion_license.dart
