@@ -14,7 +14,7 @@ class AssignedDoc {
 }
 
 class AssignedDocsService {
-  // Demo data: add your sample PDFs to pubspec under assets/assigned/
+  // Demo data: add these files under assets/assigned/ (see pubspec section below)
   static const _docs = <AssignedDoc>[
     AssignedDoc(
       id: 'a1',
@@ -34,8 +34,8 @@ class AssignedDocsService {
   ];
 
   Future<List<AssignedDoc>> listAssigned() async {
-    // Simulate a network call if you like:
-    // await Future.delayed(const Duration(milliseconds: 250));
+    // Simulate server call if needed:
+    // await Future.delayed(const Duration(milliseconds: 200));
     return _docs;
   }
 

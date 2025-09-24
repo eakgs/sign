@@ -25,6 +25,7 @@ dependencies:
   x509: ^0.2.4+3
   asn1lib: ^1.6.5
   pointycastle: ^4.0.0
+  webview_flutter: ^4.7.0
 
 dev_dependencies:
   flutter_test:
@@ -47,3 +48,5 @@ flutter:
     - assets/assigned/pdf1.pdf
     - assets/assigned/pdf2.pdf
     - assets/assigned/pdf3.pdf
+    - assets/brand/eviasign_logo.png
+    - assets/brand/eviasign_logo2.png

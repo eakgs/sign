@@ -1,25 +1,23 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'pages/pdf_signing_screen.dart';
+import 'package:sign_min/pages/pdf_signing_screen.dart';
+import 'package:sign_min/theme/brand_theme.dart';
 
 void main() {
-  // If you have a Syncfusion license, you can register it here:
-  // SyncfusionLicense.registerLicense('YOUR_LICENSE_KEY');
-  runApp(const SignMinApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const EviaDemoApp());
 }
 
-class SignMinApp extends StatelessWidget {
-  const SignMinApp({super.key});
+class EviaDemoApp extends StatelessWidget {
+  const EviaDemoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sign Min',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
-      home: const PdfSigningScreen(),
+      title: 'EviaSign Demo',
       debugShowCheckedModeBanner: false,
+      theme: eviaTheme(context),
+      home: const PdfSigningScreen(),
     );
   }
 }
