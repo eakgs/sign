@@ -8,6 +8,8 @@ import 'package:syncfusion_flutter_pdf/pdf.dart' show PdfDocument;
 
 import 'package:sign_min/services/file_helpers.dart';
 import 'package:sign_min/services/pdf_sign_service.dart';
+// NEW
+import 'package:sign_min/services/assigned_docs_service.dart';
 
 class PdfSigningScreen extends StatefulWidget {
   const PdfSigningScreen({super.key});
@@ -16,6 +18,9 @@ class PdfSigningScreen extends StatefulWidget {
 }
 
 class _PdfSigningScreenState extends State<PdfSigningScreen> {
+  // NEW: scaffold key so we can programmatically open/close the endDrawer
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   Uint8List? _pdfBytes;
   final PdfViewerController _viewerController = PdfViewerController();
 
@@ -32,6 +37,11 @@ class _PdfSigningScreenState extends State<PdfSigningScreen> {
   bool _busy = false;
   String _status = 'Please select a PDF to sign.';
 
+  // NEW: Assigned PDFs
+  final _assignedService = AssignedDocsService();
+  late Future<List<AssignedDoc>> _assignedFuture = _assignedService
+      .listAssigned();
+
   // ---------- UI Actions ----------
 
   Future<void> _pickPdf() async {
@@ -44,6 +54,38 @@ class _PdfSigningScreenState extends State<PdfSigningScreen> {
       _activeOverlayPng = null;
       _status = 'PDF loaded. Pick/draw a signature, place it, then Apply.';
     });
+  }
+
+  // NEW: open the end drawer and (re)load the assigned list
+  void _openAssignedDrawer() {
+    setState(() {
+      _assignedFuture = _assignedService.listAssigned();
+    });
+    _scaffoldKey.currentState?.openEndDrawer();
+  }
+
+  // NEW: load a selected assigned doc into the viewer
+  Future<void> _loadAssignedDoc(AssignedDoc doc) async {
+    setState(() {
+      _busy = true;
+      _status = 'Opening "${doc.title}"...';
+    });
+    try {
+      final bytes = await _assignedService.loadBytes(doc);
+      setState(() {
+        _pdfBytes = bytes;
+        _showOverlay = false;
+        _activeOverlayPng = null;
+        _status = 'Loaded: ${doc.title}. Place signature and Apply.';
+      });
+    } catch (e) {
+      setState(() {
+        _status = 'Failed to open ${doc.title}: $e';
+      });
+    } finally {
+      setState(() => _busy = false);
+      _scaffoldKey.currentState?.closeEndDrawer();
+    }
   }
 
   Future<void> _showSignaturePadDialog() async {
@@ -177,8 +219,6 @@ class _PdfSigningScreenState extends State<PdfSigningScreen> {
       reason: 'Approved',
       location: 'Malabe',
       contactInfo: 'Enadoc',
-      // assets/privatekey.pem, assets/cert.pem, assets/intermediate.pem
-      // are used by the service. Update paths if you changed them.
     );
 
     setState(() {
@@ -201,10 +241,81 @@ class _PdfSigningScreenState extends State<PdfSigningScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign PDF')),
+      key: _scaffoldKey, // NEW
+      appBar: AppBar(
+        title: const Text('Sign PDF'),
+        actions: [
+          // NEW: quick access from the AppBar too
+          IconButton(
+            tooltip: 'Assigned PDFs',
+            onPressed: _busy ? null : _openAssignedDrawer,
+            icon: const Icon(Icons.inbox),
+          ),
+        ],
+      ),
+
+      // NEW: right-side drawer listing assigned PDFs
+      endDrawer: Drawer(
+        width: 380,
+        child: SafeArea(
+          child: Column(
+            children: [
+              const ListTile(
+                leading: Icon(Icons.inbox),
+                title: Text('Assigned PDFs'),
+                subtitle: Text('Tap to open into the viewer'),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: FutureBuilder<List<AssignedDoc>>(
+                  future: _assignedFuture,
+                  builder: (context, snap) {
+                    if (snap.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snap.hasError) {
+                      return Center(
+                        child: Text('Failed to load: ${snap.error}'),
+                      );
+                    }
+                    final items = snap.data ?? const [];
+                    if (items.isEmpty) {
+                      return const Center(child: Text('No assigned PDFs.'));
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() {
+                          _assignedFuture = _assignedService.listAssigned();
+                        });
+                        await _assignedFuture;
+                      },
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, i) {
+                          final d = items[i];
+                          return ListTile(
+                            leading: const Icon(Icons.picture_as_pdf),
+                            title: Text(d.title),
+                            subtitle: Text(d.assetPath),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: _busy ? null : () => _loadAssignedDoc(d),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
       body: Column(
         children: [
-          // Top action bar (4 buttons)
+          // Top action bar (4 buttons)  // CHANGED: now 5 buttons including Assigned
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
             child: Wrap(
@@ -215,6 +326,12 @@ class _PdfSigningScreenState extends State<PdfSigningScreen> {
                   onPressed: _busy ? null : _pickPdf,
                   icon: const Icon(Icons.upload_file),
                   label: const Text('Upload'),
+                ),
+                // NEW: Assigned button
+                ElevatedButton.icon(
+                  onPressed: _busy ? null : _openAssignedDrawer,
+                  icon: const Icon(Icons.inbox),
+                  label: const Text('Assigned'),
                 ),
                 ElevatedButton.icon(
                   onPressed: _busy ? null : _showSignaturePadDialog,

@@ -44,3 +44,6 @@ flutter:
     - assets/privatekey.pem
     - assets/cert.pem
     - assets/intermediate.pem
+    - assets/assigned/pdf1.pdf
+    - assets/assigned/pdf2.pdf
+    - assets/assigned/pdf3.pdf
